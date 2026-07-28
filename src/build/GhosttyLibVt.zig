@@ -249,17 +249,23 @@ fn initLib(
         lib.bundle_ubsan_rt = false;
 
         // On Windows with MSVC, building a DLL requires the full CRT
-        // library chain. Linking libc provides 'msvcrt.lib', but that
-        // references symbols in 'vcruntime.lib' and 'ucrt.lib'. Zig's library
+        // library chain. Linking libc provides msvcrt.lib, but that
+        // references symbols in vcruntime.lib and ucrt.lib. Zig's library
         // search paths include the MSVC lib dir and the Windows SDK 'um'
-        // dir, but not the SDK 'ucrt' dir where 'ucrt.lib' lives.
+        // dir, but not the SDK 'ucrt' dir where ucrt.lib lives.
         if (kind == .shared and target.result.abi == .msvc) {
             const dynamic_link_opts: std.Build.Module.LinkSystemLibraryOptions = .{
                 .preferred_link_mode = .dynamic,
                 .search_strategy = .mode_first,
             };
+
+            // The CRT initialization code in msvcrt.lib calls
+            // __vcrt_initialize and __acrt_initialize, which are in the
+            // static CRT libraries.
             lib.root_module.linkSystemLibrary("libvcruntime", dynamic_link_opts);
 
+            // ucrt.lib is in the Windows SDK 'ucrt' dir. Detect the SDK
+            // installation and add the UCRT library path.
             const arch = target.result.cpu.arch;
             const sdk = std.zig.WindowsSdk.find(
                 b.allocator,
