@@ -259,9 +259,9 @@ fn initLib(
                 .search_strategy = .mode_first,
             };
 
-            // The CRT initialization code in msvcrt.lib calls
-            // __vcrt_initialize and __acrt_initialize, which are in the
-            // static CRT libraries.
+            // The CRT initialization code in msvcrt.lib calls __vcrt_initialize
+            // and __acrt_initialize; ensure the vcruntime and ucrt libraries are
+            // linked explicitly (they are not always discovered automatically).
             lib.root_module.linkSystemLibrary("libvcruntime", dynamic_link_opts);
 
             // ucrt.lib is in the Windows SDK 'ucrt' dir. Detect the SDK
