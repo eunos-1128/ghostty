@@ -227,7 +227,10 @@ fn initLib(
         lib.root_module.pic = true;
     }
 
-    if (target.result.os.tag == .windows) {
+    if (target.result.os.tag == .windows and
+        kind == .shared and
+        target.result.abi == .msvc)
+    {
         // Zig's ubsan emits /exclude-symbols linker directives that
         // are incompatible with the MSVC linker (LNK4229).
         lib.bundle_ubsan_rt = false;
